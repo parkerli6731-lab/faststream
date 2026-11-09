@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FastStream</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- macOS Custom Window Titlebar & Toolbar -->
+  <header class="titlebar" data-drag>
+    <div class="window-controls-spacer"></div>
+    <div class="brand">
+      <div class="brand-logo">
+        <svg viewBox="0 0 32 32" width="20" height="20">
+          <path d="M16 2 L28 14 L22 14 L22 24 L10 24 L10 14 L4 14 Z" fill="url(#brandGrad)" />
+          <defs>
+            <linearGradient id="brandGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#38bdf8"/>
+              <stop offset="100%" stop-color="#818cf8"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <span class="brand-name">FastStream</span>
+      <span class="brand-tag">v1.0.0</span>
+    </div>
+
+    <!-- Center Quick Stats / Sniffer Pill -->
+    <div class="sniffer-pill" id="snifferStatus" title="Browser sniffer active on 127.0.0.1:37651">
+      <span class="pulse-dot"></span>
+      <span class="sniffer-text">Sniffer 37651</span>
+    </div>
+
+    <!-- Right Quick Actions -->
+    <div class="header-actions" data-no-drag>
+      <button class="btn btn-primary" id="btnOpenNew">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Download
+      </button>
+      <button class="btn btn-secondary" id="btnResumeAll" title="Resume All">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+      </button>
+      <button class="btn btn-secondary" id="btnPauseAll" title="Pause All">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      </button>
+      <button class="btn btn-icon" id="btnOpenSettings" title="Settings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main App Shell -->
+  <div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Tasks</div>
+        <div class="nav-item active" data-filter="all">
+          <span class="nav-icon">📁</span>
+          <span class="nav-title">All Downloads</span>
+          <span class="badge" id="badgeAll">0</span>
+        </div>
+        <div class="nav-item" data-filter="downloading">
+          <span class="nav-icon">⚡</span>
+          <span class="nav-title">Downloading</span>
+          <span class="badge badge-accent" id="badgeDownloading">0</span>
+        </div>
+        <div class="nav-item" data-filter="completed">
+          <span class="nav-icon">✅</span>
+          <span class="nav-title">Completed</span>
+          <span class="badge" id="badgeDone">0</span>
+        </div>
+        <div class="nav-item" data-filter="paused">
+          <span class="nav-icon">⏸️</span>
+          <span class="nav-title">Paused</span>
+          <span class="badge" id="badgePaused">0</span>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Categories</div>
+        <div class="nav-item" data-category="video">
+          <span class="nav-icon">🎬</span>
+          <span class="nav-title">Videos</span>
+        </div>
+        <div class="nav-item" data-category="audio">
+          <span class="nav-icon">🎵</span>
+          <span class="nav-title">Audio</span>
+        </div>
+        <div class="nav-item" data-category="archive">
+          <span class="nav-icon">📦</span>
+          <span class="nav-title">Archives</span>
+        </div>
+        <div class="nav-item" data-category="program">
+          <span class="nav-icon">💻</span>
+          <span class="nav-title">Programs</span>
+        </div>
+        <div class="nav-item" data-category="document">
+          <span class="nav-icon">📄</span>
+          <span class="nav-title">Documents</span>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="speed-meter">
+          <div class="speed-label">Total Speed</div>
+          <div class="speed-val" id="totalSpeedVal">0.0 MB/s</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="content">
+      <div class="task-list-header">
+        <div class="col col-check"><input type="checkbox" id="selectAll"></div>
+        <div class="col col-name">Name</div>
+        <div class="col col-size">Size</div>
+        <div class="col col-status">Status</div>
+        <div class="col col-progress">Progress</div>
+        <div class="col col-speed">Speed</div>
+        <div class="col col-eta">ETA</div>
+        <div class="col col-actions">Actions</div>
+      </div>
+
+      <!-- Task Items Container -->
+      <div class="task-list" id="taskList">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">🌊</div>
+          <div class="empty-title">No Download Tasks</div>
+          <div class="empty-desc">Click "New Download" or copy a media link to begin ultra-fast multi-threaded downloading.</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal: New Download -->
+  <div class="modal-backdrop" id="modalNewDownload">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">New Download Task</div>
+        <button class="modal-close" id="btnCloseNewModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>URL / Stream Address</label>
+          <input type="text" id="inputUrl" placeholder="https://example.com/largefile.zip" autocomplete="off" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label>Save As Filename</label>
+            <input type="text" id="inputFilename" placeholder="Auto-detected from URL" />
+          </div>
+          <div class="form-group flex-1">
+            <label>Category</label>
+            <select id="selectCategory">
+              <option value="常规">General</option>
+              <option value="视频">Video</option>
+              <option value="音乐">Audio</option>
+              <option value="压缩包">Archive</option>
+              <option value="程序">Program</option>
+              <option value="文档">Document</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Download Location</label>
+          <div class="input-with-button">
+            <input type="text" id="inputDir" readonly />
+            <button class="btn btn-secondary" id="btnBrowseDir">Browse</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>Connections (<span id="connLabel">8</span> threads)</label>
+            <input type="range" id="inputConnections" min="1" max="32" value="8" />
+          </div>
+          <div class="form-group flex-1">
+            <label>Speed Limit (<span id="rateLabel">Unlimited</span>)</label>
+            <input type="range" id="inputRateLimit" min="0" max="51200" step="512" value="0" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnCancelDownload">Cancel</button>
+        <button class="btn btn-primary" id="btnSubmitDownload">Start Download</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Settings -->
+  <div class="modal-backdrop" id="modalSettings">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">FastStream Preferences</div>
+        <button class="modal-close" id="btnCloseSettingsModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Default Save Folder</label>
+          <div class="input-with-button">
+            <input type="text" id="settingDefaultDir" readonly />
+            <button class="btn btn-secondary" id="btnSettingBrowseDir">Change</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>Max Concurrent Tasks</label>
+            <input type="number" id="settingMaxConcurrent" min="1" max="10" value="3" />
+          </div>
+          <div class="form-group flex-1">
+            <label>Default Connections</label>
+            <input type="number" id="settingDefaultConn" min="1" max="32" value="8" />
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-card-title">Open Source & Freedom</div>
+          <div class="info-card-desc">
+            FastStream is an open-source, clean-room high-performance multi-connection downloader engine. Licensed under MIT. Zero tracking, zero telemetry.
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btnSaveSettings">Save & Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

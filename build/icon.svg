@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="50%" stop-color="#0a0f1d" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+
+    <!-- Core Lightning Stream Gradient -->
+    <linearGradient id="streamGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="35%" stop-color="#2563eb" />
+      <stop offset="70%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#a855f7" />
+    </linearGradient>
+
+    <!-- Accent Glow Gradient -->
+    <linearGradient id="cyanGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0.6" />
+    </linearGradient>
+
+    <!-- Soft shadow filter -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="28" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#0284c7" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- macOS Style Squircle Base -->
+  <rect x="32" y="32" width="960" height="960" rx="224" fill="url(#bgGrad)" stroke="#1e293b" stroke-width="4" />
+
+  <!-- Inner Ambient Glow Ring -->
+  <rect x="40" y="40" width="944" height="944" rx="216" fill="none" stroke="url(#cyanGlow)" stroke-width="2" opacity="0.3" />
+
+  <!-- Speed Stream Lines (Parallel Accelerators) -->
+  <g opacity="0.85" filter="url(#dropShadow)">
+    <!-- Stream Line 1 (Left Wing) -->
+    <path d="M300 280 L420 280 L360 480 L460 480 L290 760 L360 540 L260 540 Z" fill="url(#cyanGlow)" opacity="0.4" />
+
+    <!-- Stream Line 2 (Right Wing) -->
+    <path d="M724 280 L604 280 L664 480 L564 480 L734 760 L664 540 L764 540 Z" fill="url(#streamGrad)" opacity="0.4" />
+
+    <!-- Main FastStream Arrow / Falcon Core -->
+    <path d="M512 200 
+             L720 480 
+             L610 480 
+             L610 650 
+             L414 650 
+             L414 480 
+             L304 480 Z" 
+          fill="url(#streamGrad)" />
+
+    <!-- Supersonic Center Flow Surge -->
+    <path d="M512 280 
+             L640 450 
+             L560 450 
+             L560 760 
+             L464 760 
+             L464 450 
+             L384 450 Z" 
+          fill="#38bdf8" 
+          opacity="0.9" />
+
+    <!-- Dynamic Flow Particles / Arrowhead Tip -->
+    <polygon points="512,830 450,730 574,730" fill="#a855f7" />
+    <circle cx="512" cy="880" r="14" fill="#38bdf8" />
+    <circle cx="512" cy="920" r="8" fill="#818cf8" opacity="0.7" />
+  </g>
+</svg>

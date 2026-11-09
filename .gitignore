@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+bun.lock
+bun.lockb
+
+# Build Outputs
+dist/
+release/
+*.dmg
+*.blockmap
+
+# OS files
+.DS_Store
+Thumbs.db
+*.log

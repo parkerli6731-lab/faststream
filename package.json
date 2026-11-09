@@ -1,0 +1,60 @@
+{
+  "name": "faststream",
+  "version": "1.0.0",
+  "description": "High-performance open-source multi-connection downloader for macOS (Apple Silicon native)",
+  "main": "dist/src/main/index.js",
+  "author": "FastStream Open Source Project",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/simonqian/faststream.git"
+  },
+  "scripts": {
+    "build:ts": "bun build src/main/index.ts --outfile dist/src/main/index.js --target node --external electron && bun build src/preload/index.ts --outfile dist/src/preload/index.js --target node --external electron",
+    "start": "bun run build:ts && electron .",
+    "pack": "bun run build:ts && electron-builder --dir",
+    "dist": "bun run build:ts && electron-builder --mac dmg --arm64",
+    "test": "bun run tests/differential_harness.ts"
+  },
+  "build": {
+    "appId": "org.faststream.downloader",
+    "productName": "FastStream",
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": [
+        "dmg"
+      ],
+      "icon": "build/icon.png",
+      "identity": null
+    },
+    "dmg": {
+      "title": "FastStream 1.0.0 (Apple Silicon)",
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "files": [
+      "dist/**/*",
+      "ui/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    }
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^22.0.0",
+    "electron": "^45.2.3",
+    "electron-builder": "^26.18.0"
+  }
+}

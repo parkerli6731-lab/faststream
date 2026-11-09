@@ -1,0 +1,94 @@
+{
+  "version": "5.0.1",
+  "engine": "tdmfast-cleanroom-golden-trace",
+  "checksum": "sha256-verified-spec",
+  "slicing_cases": [
+    {
+      "desc": "Standard 100MB 8-connection slice",
+      "total_size": 104857600,
+      "connections": 8,
+      "expected_segments": [
+        { "index": 0, "start": 0, "end": 13107199, "size": 13107200, "range_header": "bytes=0-13107199" },
+        { "index": 1, "start": 13107200, "end": 26214399, "size": 13107200, "range_header": "bytes=13107200-26214399" },
+        { "index": 2, "start": 26214400, "end": 39321599, "size": 13107200, "range_header": "bytes=26214400-39321599" },
+        { "index": 3, "start": 39321600, "end": 52428799, "size": 13107200, "range_header": "bytes=39321600-52428799" },
+        { "index": 4, "start": 52428800, "end": 65535999, "size": 13107200, "range_header": "bytes=52428800-65535999" },
+        { "index": 5, "start": 65536000, "end": 78643199, "size": 13107200, "range_header": "bytes=65536000-78643199" },
+        { "index": 6, "start": 78643200, "end": 91750399, "size": 13107200, "range_header": "bytes=78643200-91750399" },
+        { "index": 7, "start": 91750400, "end": 104857599, "size": 13107200, "range_header": "bytes=91750400-104857599" }
+      ]
+    },
+    {
+      "desc": "100 bytes partitioned into 3 connections",
+      "total_size": 100,
+      "connections": 3,
+      "expected_segments": [
+        { "index": 0, "start": 0, "end": 32, "size": 33, "range_header": "bytes=0-32" },
+        { "index": 1, "start": 33, "end": 65, "size": 33, "range_header": "bytes=33-65" },
+        { "index": 2, "start": 66, "end": 99, "size": 34, "range_header": "bytes=66-99" }
+      ]
+    },
+    {
+      "desc": "Small file clamping: 4 bytes with 8 requested connections",
+      "total_size": 4,
+      "connections": 8,
+      "expected_segments": [
+        { "index": 0, "start": 0, "end": 0, "size": 1, "range_header": "bytes=0-0" },
+        { "index": 1, "start": 1, "end": 1, "size": 1, "range_header": "bytes=1-1" },
+        { "index": 2, "start": 2, "end": 2, "size": 1, "range_header": "bytes=2-2" },
+        { "index": 3, "start": 3, "end": 3, "size": 1, "range_header": "bytes=3-3" }
+      ]
+    },
+    {
+      "desc": "Unknown stream size fallback",
+      "total_size": null,
+      "connections": 8,
+      "expected_segments": [
+        { "index": 0, "start": 0, "end": null, "size": null, "range_header": "bytes=0-" }
+      ]
+    }
+  ],
+  "title_cleaning_cases": [
+    {
+      "raw": "(153) 震撼！黑神话悟空最新实机演示 - YouTube",
+      "expected": "震撼！黑神话悟空最新实机演示"
+    },
+    {
+      "raw": "(2) 高能预警！年度最佳剪辑_哔哩哔哩_bilibili",
+      "expected": "高能预警！年度最佳剪辑"
+    },
+    {
+      "raw": "爆笑喜剧片段 - 抖音",
+      "expected": "爆笑喜剧片段"
+    },
+    {
+      "raw": "DeepSeek R1 / Release Notice on X: Announcement",
+      "expected": "DeepSeek R1 Release Notice"
+    },
+    {
+      "raw": "Bad\\Path:Chars*In?File\"Name<Test>|Run.mp4",
+      "expected": "Bad Path Chars In File Name Test Run.mp4"
+    }
+  ],
+  "fsm_lifecycle_frames": [
+    { "frame": 0, "action": "INIT", "status": "queued", "downloaded": 0, "active_segments": 0 },
+    { "frame": 1, "action": "START", "status": "connecting", "downloaded": 0, "active_segments": 0 },
+    { "frame": 2, "action": "PROBE_SUCCESS", "status": "downloading", "downloaded": 0, "active_segments": 2 },
+    { "frame": 3, "action": "SEGMENT_CHUNK_0", "status": "downloading", "downloaded": 250, "active_segments": 2 },
+    { "frame": 4, "action": "SEGMENT_CHUNK_1", "status": "downloading", "downloaded": 450, "active_segments": 2 },
+    { "frame": 5, "action": "PAUSE", "status": "paused", "downloaded": 450, "active_segments": 0 },
+    { "frame": 6, "action": "RESUME", "status": "downloading", "downloaded": 450, "active_segments": 2 },
+    { "frame": 7, "action": "SEGMENT_COMPLETE_0", "status": "downloading", "downloaded": 700, "active_segments": 1 },
+    { "frame": 8, "action": "SEGMENT_COMPLETE_1", "status": "merging", "downloaded": 1000, "active_segments": 0 },
+    { "frame": 9, "action": "MERGE_FINISH", "status": "done", "downloaded": 1000, "active_segments": 0 }
+  ],
+  "rate_limiter_cases": [
+    { "rate_kb": 100, "elapsed_sec": 0.5, "requested_bytes": 100000, "expected_allowed": 51200 },
+    { "rate_kb": 0, "elapsed_sec": 0.5, "requested_bytes": 100000, "expected_allowed": 100000 },
+    { "rate_kb": 200, "elapsed_sec": 1.0, "requested_bytes": 150000, "expected_allowed": 150000 }
+  ],
+  "merge_validation_cases": [
+    { "actual_size": 1000, "expected_size": 1000, "is_valid": true, "error": null },
+    { "actual_size": 990, "expected_size": 1000, "is_valid": false, "error": "文件大小不符：实际 990 / 期望 1000" }
+  ]
+}
