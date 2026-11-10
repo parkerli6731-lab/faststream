@@ -7,7 +7,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/simonqian/faststream.git"
+    "url": "https://github.com/parkerli6731-lab/faststream.git"
   },
   "scripts": {
     "build:ts": "bun build src/main/index.ts --outfile dist/src/main/index.js --target node --external electron && bun build src/preload/index.ts --outfile dist/src/preload/index.js --target node --external electron",

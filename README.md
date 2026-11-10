@@ -64,7 +64,7 @@ Double-click to mount the DMG, then drag **FastStream** into your `/Applications
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/simonqian/faststream.git
+git clone https://github.com/parkerli6731-lab/faststream.git
 cd faststream
 
 # 2. Install dependencies
