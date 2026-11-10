@@ -32,20 +32,41 @@
       <span class="sniffer-text">Sniffer 37651</span>
     </div>
 
-    <!-- Right Quick Actions -->
+    <!-- Main Command Toolbar (8 完整操作核心按钮) -->
     <div class="header-actions" data-no-drag>
-      <button class="btn btn-primary" id="btnOpenNew">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        New Download
+      <button class="btn btn-tool" id="btnOpenNew" title="添加新的下载任务">
+        <span class="btn-tool-icon">➕</span>
+        <span class="btn-tool-label">添加URL</span>
       </button>
-      <button class="btn btn-secondary" id="btnResumeAll" title="Resume All">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+      <button class="btn btn-tool" id="btnResume" title="恢复选中的任务">
+        <span class="btn-tool-icon">▶️</span>
+        <span class="btn-tool-label">恢复</span>
       </button>
-      <button class="btn btn-secondary" id="btnPauseAll" title="Pause All">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      <button class="btn btn-tool" id="btnPause" title="暂停选中的任务">
+        <span class="btn-tool-icon">⏸️</span>
+        <span class="btn-tool-label">暂停</span>
       </button>
-      <button class="btn btn-icon" id="btnOpenSettings" title="Settings">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <button class="btn btn-tool" id="btnPauseAll" title="全部暂停所有任务">
+        <span class="btn-tool-icon">⏹️</span>
+        <span class="btn-tool-label">全部暂停</span>
+      </button>
+      <button class="btn btn-tool" id="btnDelete" title="删除选中的任务">
+        <span class="btn-tool-icon">🗑️</span>
+        <span class="btn-tool-label">删除</span>
+      </button>
+      <div class="tool-sep"></div>
+      <button class="btn btn-tool" id="btnOpenFile" title="打开选中的文件">
+        <span class="btn-tool-icon">📄</span>
+        <span class="btn-tool-label">打开</span>
+      </button>
+      <button class="btn btn-tool" id="btnOpenFolder" title="在访达 (Finder) 中显示文件夹">
+        <span class="btn-tool-icon">📁</span>
+        <span class="btn-tool-label">打开文件夹</span>
+      </button>
+      <div class="tool-sep"></div>
+      <button class="btn btn-tool" id="btnOpenSettings" title="下载参数与系统设置">
+        <span class="btn-tool-icon">⚙️</span>
+        <span class="btn-tool-label">选项</span>
       </button>
     </div>
   </header>
@@ -241,6 +262,29 @@
         <button class="btn btn-primary" id="btnSaveSettings">Save & Close</button>
       </div>
     </div>
+  </div>
+
+  <!-- App Footer Status Bar (经典桌面下载器风格) -->
+  <footer class="app-statusbar">
+    <div class="status-item" id="statusCountText">0 个任务</div>
+    <div class="status-sep">|</div>
+    <div class="status-item" id="statusSpeedText">总速度: 0 B/s</div>
+    <div class="status-item status-right" id="statusSnifferText">
+      <span class="pulse-dot-inline"></span> 本地嗅探端口: 127.0.0.1:37651 (监听中)
+    </div>
+  </footer>
+
+  <!-- Context Menu (右键上下文菜单) -->
+  <div class="context-menu" id="contextMenu">
+    <div class="context-item" id="ctxOpen">📄 打开文件</div>
+    <div class="context-item" id="ctxShowFolder">📁 在访达中显示</div>
+    <div class="context-divider"></div>
+    <div class="context-item" id="ctxResume">▶️ 恢复 / 重新下载</div>
+    <div class="context-item" id="ctxPause">⏸️ 暂停下载</div>
+    <div class="context-divider"></div>
+    <div class="context-item" id="ctxCopyUrl">📋 复制下载链接</div>
+    <div class="context-divider"></div>
+    <div class="context-item text-danger" id="ctxDelete">🗑️ 删除任务及文件</div>
   </div>
 
   <script src="app.js"></script>

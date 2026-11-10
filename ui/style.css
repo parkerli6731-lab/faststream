@@ -130,7 +130,57 @@ button svg {
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+}
+
+.btn-tool {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text-primary);
+  padding: 4px 8px;
+  min-width: 54px;
+  height: 42px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-tool:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--border);
+}
+
+.btn-tool:active {
+  background: var(--bg-surface-active);
+  transform: translateY(1px);
+}
+
+.btn-tool-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.btn-tool-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.btn-tool:hover .btn-tool-label {
+  color: var(--text-primary);
+}
+
+.tool-sep {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+  margin: 0 4px;
 }
 
 /* App Shell */
@@ -581,4 +631,94 @@ input[type="range"] {
   font-size: 12px;
   color: var(--text-muted);
   line-height: 1.5;
+}
+
+/* Card Selection */
+.task-card.selected {
+  border-color: var(--accent) !important;
+  background: var(--bg-surface-active) !important;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+}
+
+/* App Footer Statusbar */
+.app-statusbar {
+  height: 28px;
+  background: var(--bg-sidebar);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 11px;
+  color: var(--text-muted);
+  gap: 12px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-sep {
+  color: var(--border);
+}
+
+.status-right {
+  margin-left: auto;
+  color: var(--text-secondary);
+}
+
+.pulse-dot-inline {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+  display: inline-block;
+}
+
+/* Context Menu */
+.context-menu {
+  position: fixed;
+  background: #141a2c;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  padding: 4px 0;
+  min-width: 170px;
+  z-index: 2000;
+  display: none;
+}
+
+.context-menu.show {
+  display: block;
+}
+
+.context-item {
+  padding: 7px 14px;
+  font-size: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.1s ease;
+}
+
+.context-item:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.context-item.text-danger:hover {
+  background: var(--danger);
+  color: #fff;
+}
+
+.context-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
 }

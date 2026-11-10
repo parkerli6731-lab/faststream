@@ -18,11 +18,14 @@ const faststreamAPI = {
   defaultDir: () => ipcRenderer.invoke('fs:defaultDir'),
   openFolder: (dir: string) => ipcRenderer.invoke('fs:openFolder', dir),
   openFile: (fp: string) => ipcRenderer.invoke('fs:openFile', fp),
+  showInFolder: (fp: string) => ipcRenderer.invoke('fs:showInFolder', fp),
 
   // 系统与设置
   getSettings: () => ipcRenderer.invoke('fs:getSettings'),
   saveSettings: (s: any) => ipcRenderer.invoke('fs:saveSettings', s),
   clipboardRead: () => ipcRenderer.invoke('fs:clipboardRead'),
+  clipboardWrite: (text: string) => ipcRenderer.invoke('fs:clipboardWrite', text),
+  restart: (id: number) => ipcRenderer.invoke('fs:restart', id),
 
   // 事件监听
   onTaskUpdate: (cb: (snap: any) => void) => {

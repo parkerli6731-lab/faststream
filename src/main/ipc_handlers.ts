@@ -144,6 +144,35 @@ export class FastStreamManager {
 
     ipcMain.handle('fs:openFolder', (_e, dir: string) => { if (dir) shell.openPath(dir); });
     ipcMain.handle('fs:openFile', (_e, fp: string) => { if (fp) shell.openPath(fp); });
+    ipcMain.handle('fs:showInFolder', (_e, fp: string) => {
+      if (fp) {
+        if (fs.existsSync(fp)) shell.showItemInFolder(fp);
+        else shell.openPath(path.dirname(fp));
+      }
+    });
+
+    ipcMain.handle('fs:restart', async (_e, id: number) => {
+      const t = this.tasks.get(id);
+      if (t && t.snap) {
+        if (t.engine) t.engine.pause();
+        const snap = t.snap;
+        const engine = new DownloadEngine({
+          id,
+          url: snap.url,
+          dir: snap.dir,
+          filename: snap.filename,
+          connections: 8,
+          onSnapshot: (newSnap) => {
+            this.tasks.set(id, { engine, snap: newSnap });
+            this.broadcastTaskUpdate(newSnap);
+          },
+        });
+        const initialSnap = engine.getSnapshot();
+        this.tasks.set(id, { engine, snap: initialSnap });
+        this.broadcastTaskUpdate(initialSnap);
+        engine.start().catch((err) => console.error('[Restart Error]:', err));
+      }
+    });
 
     ipcMain.handle('fs:getSettings', () => this.settings);
     ipcMain.handle('fs:saveSettings', (_e, newSettings) => {
@@ -153,5 +182,6 @@ export class FastStreamManager {
     });
 
     ipcMain.handle('fs:clipboardRead', () => clipboard.readText());
+    ipcMain.handle('fs:clipboardWrite', (_e, text: string) => { clipboard.writeText(text); return true; });
   }
 }
