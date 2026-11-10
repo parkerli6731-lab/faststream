@@ -210,47 +210,18 @@ function openNewDownload(prefill = {}) {
 
 // Initialize Application
 async function init() {
-  if (!window.faststreamAPI) return;
+  console.log('[FastStream UI] Initializing interface...');
 
-  // 1. Load initial default directory & settings
-  defaultDownloadDir = await window.faststreamAPI.defaultDir();
-  const settings = await window.faststreamAPI.getSettings();
-  if (settings.defaultDir) defaultDownloadDir = settings.defaultDir;
-
-  $('#settingDefaultDir').value = defaultDownloadDir;
-  $('#settingMaxConcurrent').value = settings.maxConcurrent || 3;
-  $('#settingDefaultConn').value = settings.defaultConnections || 8;
-
-  // 2. Load existing task list
-  const initialTasks = await window.faststreamAPI.list();
-  if (Array.isArray(initialTasks)) {
-    initialTasks.forEach(t => tasks.set(t.id, t));
-  }
-  renderTaskList();
-
-  // 3. Register real-time event listeners
-  window.faststreamAPI.onTaskUpdate((snap) => {
-    tasks.set(snap.id, snap);
-    renderTaskList();
-  });
-
-  window.faststreamAPI.onTaskRemove((id) => {
-    tasks.delete(id);
-    const card = $(`[data-task-id="${id}"]`);
-    if (card) card.remove();
-    renderTaskList();
-  });
-
-  // Browser sniffer incoming task trigger
-  window.faststreamAPI.onSniff((payload) => {
-    openNewDownload(payload);
-  });
-
-  // 4. Bind UI Toolbar Events
-  $('#btnOpenNew').onclick = async () => {
-    // Check clipboard for links
+  // 1. Bind UI Toolbar Events IMMEDIATELY (never block on IPC)
+  const handleOpenNew = async () => {
     let clipboardText = '';
-    try { clipboardText = await window.faststreamAPI.clipboardRead(); } catch (e) {}
+    try {
+      if (window.faststreamAPI && window.faststreamAPI.clipboardRead) {
+        clipboardText = await window.faststreamAPI.clipboardRead();
+      }
+    } catch (e) {
+      console.warn('[FastStream UI] Clipboard read skipped:', e);
+    }
     if (clipboardText && (clipboardText.startsWith('http://') || clipboardText.startsWith('https://'))) {
       openNewDownload({ url: clipboardText.trim() });
     } else {
@@ -258,13 +229,21 @@ async function init() {
     }
   };
 
+  const btnOpenNew = $('#btnOpenNew');
+  if (btnOpenNew) btnOpenNew.onclick = handleOpenNew;
+
+  const btnEmptyNew = $('#btnEmptyNew');
+  if (btnEmptyNew) btnEmptyNew.onclick = handleOpenNew;
+
   $('#btnResumeAll').onclick = () => {
+    if (!window.faststreamAPI) return;
     tasks.forEach(t => {
       if (['paused', 'error'].includes(t.status)) window.faststreamAPI.resume(t.id);
     });
   };
 
   $('#btnPauseAll').onclick = () => {
+    if (!window.faststreamAPI) return;
     tasks.forEach(t => {
       if (['downloading', 'connecting'].includes(t.status)) window.faststreamAPI.pause(t.id);
     });
@@ -295,11 +274,13 @@ async function init() {
   });
 
   $('#btnBrowseDir').onclick = async () => {
+    if (!window.faststreamAPI) return;
     const chosen = await window.faststreamAPI.chooseDir();
     if (chosen) $('#inputDir').value = chosen;
   };
 
   $('#btnSettingBrowseDir').onclick = async () => {
+    if (!window.faststreamAPI) return;
     const chosen = await window.faststreamAPI.chooseDir();
     if (chosen) $('#settingDefaultDir').value = chosen;
   };
@@ -314,13 +295,15 @@ async function init() {
     const connections = parseInt($('#inputConnections').value) || 8;
     const maxRate = parseInt($('#inputRateLimit').value) || 0;
 
-    await window.faststreamAPI.add({
-      url,
-      filename,
-      dir,
-      connections,
-      maxRate,
-    });
+    if (window.faststreamAPI) {
+      await window.faststreamAPI.add({
+        url,
+        filename,
+        dir,
+        connections,
+        maxRate,
+      });
+    }
 
     hideModal('#modalNewDownload');
   };
@@ -332,7 +315,9 @@ async function init() {
       maxConcurrent: parseInt($('#settingMaxConcurrent').value) || 3,
       defaultConnections: parseInt($('#settingDefaultConn').value) || 8,
     };
-    await window.faststreamAPI.saveSettings(updated);
+    if (window.faststreamAPI) {
+      await window.faststreamAPI.saveSettings(updated);
+    }
     defaultDownloadDir = updated.defaultDir;
     hideModal('#modalSettings');
   };
@@ -356,6 +341,52 @@ async function init() {
       renderTaskList();
     };
   });
+
+  renderTaskList();
+
+  // 2. Connect IPC if running inside Electron
+  if (!window.faststreamAPI) {
+    console.warn('[FastStream UI] window.faststreamAPI not detected. Running in standalone or fallback mode.');
+    return;
+  }
+
+  try {
+    // Load initial default directory & settings
+    defaultDownloadDir = (await window.faststreamAPI.defaultDir()) || '';
+    const settings = (await window.faststreamAPI.getSettings()) || {};
+    if (settings.defaultDir) defaultDownloadDir = settings.defaultDir;
+
+    $('#settingDefaultDir').value = defaultDownloadDir;
+    $('#settingMaxConcurrent').value = settings.maxConcurrent || 3;
+    $('#settingDefaultConn').value = settings.defaultConnections || 8;
+
+    // Load existing task list
+    const initialTasks = await window.faststreamAPI.list();
+    if (Array.isArray(initialTasks)) {
+      initialTasks.forEach(t => tasks.set(t.id, t));
+    }
+    renderTaskList();
+
+    // Register real-time event listeners
+    window.faststreamAPI.onTaskUpdate((snap) => {
+      tasks.set(snap.id, snap);
+      renderTaskList();
+    });
+
+    window.faststreamAPI.onTaskRemove((id) => {
+      tasks.delete(id);
+      const card = $(`[data-task-id="${id}"]`);
+      if (card) card.remove();
+      renderTaskList();
+    });
+
+    // Browser sniffer incoming task trigger
+    window.faststreamAPI.onSniff((payload) => {
+      openNewDownload(payload);
+    });
+  } catch (err) {
+    console.error('[FastStream UI] Error during IPC initialization:', err);
+  }
 }
 
 window.addEventListener('DOMContentLoaded', init);

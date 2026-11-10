@@ -45,8 +45,18 @@ body {
   -webkit-app-region: drag;
 }
 
-[data-no-drag], button, input, select, a {
-  -webkit-app-region: no-drag;
+[data-no-drag],
+[data-no-drag] *,
+button,
+button *,
+input,
+select,
+a {
+  -webkit-app-region: no-drag !important;
+}
+
+button svg {
+  pointer-events: none;
 }
 
 /* Header & Titlebar */

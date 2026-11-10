@@ -10,7 +10,7 @@
     "url": "https://github.com/parkerli6731-lab/faststream.git"
   },
   "scripts": {
-    "build:ts": "bun build src/main/index.ts --outfile dist/src/main/index.js --target node --external electron && bun build src/preload/index.ts --outfile dist/src/preload/index.js --target node --external electron",
+    "build:ts": "bun build src/main/index.ts --outfile dist/src/main/index.js --target node --format cjs --external electron && bun build src/preload/index.ts --outfile dist/src/preload/index.js --target node --format cjs --external electron",
     "start": "bun run build:ts && electron .",
     "pack": "bun run build:ts && electron-builder --dir",
     "dist": "bun run build:ts && electron-builder --mac dmg --arm64",

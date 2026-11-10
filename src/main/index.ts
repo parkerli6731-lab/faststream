@@ -10,6 +10,14 @@ let manager: FastStreamManager | null = null;
 let mainWindow: BrowserWindow | null = null;
 
 function createMainWindow(): BrowserWindow {
+  const appPath = app.getAppPath();
+  const preloadPath = path.join(appPath, 'dist/src/preload/index.js');
+  const uiPath = path.join(appPath, 'ui/index.html');
+
+  console.log(`[FastStream Main] App path: ${appPath}`);
+  console.log(`[FastStream Main] Preload path: ${preloadPath}`);
+  console.log(`[FastStream Main] UI path: ${uiPath}`);
+
   const win = new BrowserWindow({
     width: 1040,
     height: 680,
@@ -19,12 +27,14 @@ function createMainWindow(): BrowserWindow {
     titleBarStyle: 'hiddenInset',
     backgroundColor: '#090c14',
     webPreferences: {
-      preload: path.join(__dirname, '../preload/index.js'),
+      preload: preloadPath,
       sandbox: false,
+      contextIsolation: true,
+      nodeIntegration: false,
     },
   });
 
-  win.loadFile(path.join(__dirname, '../../ui/index.html'));
+  win.loadFile(uiPath);
 
   win.on('closed', () => {
     mainWindow = null;
