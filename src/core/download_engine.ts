@@ -28,6 +28,8 @@ export class DownloadEngine {
   private readonly options: DownloadOptions;
   private readonly limiter: TokenBucketLimiter;
   private abortControllers: AbortController[] = [];
+  private speedTimer: any = null;
+  private defaultUA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36';
 
   constructor(options: DownloadOptions) {
     this.options = {
@@ -55,6 +57,32 @@ export class DownloadEngine {
     }
   }
 
+  private startSpeedTicker(): void {
+    this.stopSpeedTicker();
+    let lastBytes = this.fsm.getSnapshot().downloaded;
+    this.speedTimer = setInterval(() => {
+      const snap = this.fsm.getSnapshot();
+      if (snap.status !== 'downloading') return;
+      const currentBytes = snap.downloaded;
+      const delta = Math.max(0, currentBytes - lastBytes);
+      lastBytes = currentBytes;
+      const speed = delta * 2; // sampled every 500ms
+      let eta: number | null = null;
+      if (snap.size && snap.size > currentBytes && speed > 0) {
+        eta = Math.ceil((snap.size - currentBytes) / speed);
+      }
+      this.fsm = this.fsm.dispatch({ type: 'SPEED_TICK', speed, eta });
+      this.emitUpdate();
+    }, 500);
+  }
+
+  private stopSpeedTicker(): void {
+    if (this.speedTimer) {
+      clearInterval(this.speedTimer);
+      this.speedTimer = null;
+    }
+  }
+
   /**
    * 启动探测与分段下载流水线
    */
@@ -65,26 +93,76 @@ export class DownloadEngine {
     try {
       fs.mkdirSync(this.options.dir, { recursive: true });
 
-      // 阶段 1: 探测请求 (Probe HTTP HEAD or Range bytes=0-0)
-      const probeRes = await fetch(this.options.url, {
-        method: 'HEAD',
-        headers: {
-          ...this.options.headers,
-          'User-Agent': 'FastStream/1.0.0 (Macintosh; Apple Silicon)',
-        },
-      });
+      const reqHeaders: Record<string, string> = {
+        'User-Agent': this.defaultUA,
+        ...this.options.headers,
+      };
 
-      if (!probeRes.ok) {
-        throw new Error(`HTTP 探测失败: ${probeRes.status} ${probeRes.statusText}`);
+      // 阶段 1: 弹性探测请求 (优先 HEAD，若遇 403/405/501 则降级为 GET Range 探测)
+      let probeRes: Response | null = null;
+      let probeMethod = 'HEAD';
+      try {
+        probeRes = await fetch(this.options.url, {
+          method: 'HEAD',
+          headers: reqHeaders,
+        });
+        if (!probeRes.ok && [403, 405, 501].includes(probeRes.status)) {
+          probeRes = null;
+        }
+      } catch (e) {
+        probeRes = null;
       }
 
-      const contentLength = probeRes.headers.get('content-length');
+      if (!probeRes) {
+        probeMethod = 'GET';
+        probeRes = await fetch(this.options.url, {
+          method: 'GET',
+          headers: {
+            ...reqHeaders,
+            Range: 'bytes=0-0',
+          },
+        });
+      }
+
+      if (!probeRes.ok && probeRes.status !== 206) {
+        throw new Error(`HTTP 探测失败: ${probeRes.status} ${probeRes.statusText || ''}`.trim());
+      }
+
+      let totalSize: number | null = null;
+      let resumable = false;
+
+      // 优先从 Content-Range 获取总长度 (如 bytes 0-0/1048576)
+      const contentRange = probeRes.headers.get('content-range');
+      if (contentRange) {
+        const match = contentRange.match(/\/(\d+)/);
+        if (match) {
+          totalSize = parseInt(match[1], 10);
+          resumable = true;
+        }
+      }
+
+      // 其次从 Content-Length 获取
+      if (totalSize == null) {
+        const contentLength = probeRes.headers.get('content-length');
+        if (contentLength) {
+          const parsed = parseInt(contentLength, 10);
+          if (!isNaN(parsed) && parsed > 0) {
+            totalSize = parsed;
+          }
+        }
+      }
+
       const acceptRanges = probeRes.headers.get('accept-ranges');
-      const totalSize = contentLength ? parseInt(contentLength, 10) : null;
-      const resumable = acceptRanges === 'bytes' || probeRes.status === 206;
+      if (acceptRanges === 'bytes' || probeRes.status === 206) {
+        resumable = true;
+      }
+
+      if (probeMethod === 'GET' && probeRes.body) {
+        try { await probeRes.body.cancel(); } catch (e) {}
+      }
 
       // 阶段 2: 状态机进入 downloading 并完成切片
-      const conns = resumable && totalSize ? (this.options.connections || 8) : 1;
+      const conns = resumable && totalSize && totalSize > 1024 ? (this.options.connections || 8) : 1;
       this.fsm = this.fsm.dispatch({
         type: 'PROBE_SUCCESS',
         totalSize,
@@ -93,6 +171,9 @@ export class DownloadEngine {
       });
       this.emitUpdate();
 
+      // 启动实时速率计算器
+      this.startSpeedTicker();
+
       // 阶段 3: 并发拉取各分段
       const currentSnap = this.fsm.getSnapshot();
       const segPromises = currentSnap.segments.map((seg) => this.downloadSegment(seg));
@@ -100,7 +181,9 @@ export class DownloadEngine {
 
       // 阶段 4: 所有分段完成，执行无损原子合并
       await this.mergeSegments();
+      this.stopSpeedTicker();
     } catch (err: any) {
+      this.stopSpeedTicker();
       this.fsm = this.fsm.dispatch({ type: 'FAIL', error: err.message || String(err) });
       this.emitUpdate();
       throw err;
@@ -113,9 +196,12 @@ export class DownloadEngine {
     this.abortControllers.push(controller);
 
     const headers: Record<string, string> = {
+      'User-Agent': this.defaultUA,
       ...this.options.headers,
-      Range: formatRangeHeader(segment),
     };
+    if (segment.end != null) {
+      headers.Range = formatRangeHeader(segment);
+    }
 
     const res = await fetch(this.options.url, {
       headers,
@@ -186,6 +272,7 @@ export class DownloadEngine {
   }
 
   public pause(): void {
+    this.stopSpeedTicker();
     this.abortControllers.forEach((c) => c.abort());
     this.abortControllers = [];
     this.fsm = this.fsm.dispatch({ type: 'PAUSE' });

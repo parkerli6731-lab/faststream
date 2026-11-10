@@ -128,11 +128,13 @@ function renderTaskList() {
         <input type="checkbox" class="col-check task-check" data-id="${task.id}">
         <div class="col col-name">
           <div class="task-filename" title="${task.filename}">${task.filename}</div>
-          <div class="task-url" title="${task.url}">${task.url}</div>
+          <div class="task-url" title="${task.error || task.url}">
+            ${task.error ? `<span style="color:#ef4444; font-weight: 500;">[${task.error}]</span> ` : ''}${task.url}
+          </div>
         </div>
         <div class="col col-size">${fmtBytes(task.downloaded)} / ${fmtBytes(task.size)}</div>
         <div class="col col-status">
-          <span class="status-pill status-${task.status}">${task.status.toUpperCase()}</span>
+          <span class="status-pill status-${task.status}" title="${task.error || ''}">${task.status.toUpperCase()}</span>
         </div>
         <div class="col col-progress">
           <div class="prog-bar-wrap">
@@ -255,14 +257,44 @@ async function init() {
   $('#btnCancelDownload').onclick = () => hideModal('#modalNewDownload');
 
   // Input changes
+  const checkVideoTip = (url) => {
+    const tip = $('#videoPageTip');
+    if (!tip) return;
+    const isVideoPage = url.includes('youtube.com/watch') || url.includes('youtu.be/') || url.includes('bilibili.com/video');
+    tip.style.display = isVideoPage ? 'block' : 'none';
+  };
+
   $('#inputUrl').addEventListener('input', () => {
     const url = $('#inputUrl').value.trim();
+    checkVideoTip(url);
     if (url && !$('#inputFilename').value) {
       const detected = nameFromUrl(url);
       $('#inputFilename').value = detected;
       $('#selectCategory').value = guessCategory(detected);
     }
   });
+
+  const btnSampleVideo = $('#btnSampleVideo');
+  if (btnSampleVideo) {
+    btnSampleVideo.onclick = () => {
+      const sampleUrl = 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_5MB.mp4';
+      $('#inputUrl').value = sampleUrl;
+      $('#inputFilename').value = 'Big_Buck_Bunny_720p_5MB.mp4';
+      $('#selectCategory').value = '视频';
+      checkVideoTip(sampleUrl);
+    };
+  }
+
+  const btnSampleSpeed = $('#btnSampleSpeed');
+  if (btnSampleSpeed) {
+    btnSampleSpeed.onclick = () => {
+      const sampleUrl = 'https://speed.cloudflare.com/__down?bytes=10485760';
+      $('#inputUrl').value = sampleUrl;
+      $('#inputFilename').value = 'cloudflare_speedtest_10mb.bin';
+      $('#selectCategory').value = '常规';
+      checkVideoTip(sampleUrl);
+    };
+  }
 
   $('#inputConnections').addEventListener('input', (e) => {
     $('#connLabel').textContent = e.target.value;

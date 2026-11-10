@@ -149,6 +149,14 @@
         <div class="form-group">
           <label>URL / Stream Address</label>
           <input type="text" id="inputUrl" placeholder="https://example.com/largefile.zip" autocomplete="off" />
+          <div id="videoPageTip" style="display:none; margin-top: 8px; padding: 10px 12px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 6px; font-size: 12px; line-height: 1.5; color: #38bdf8;">
+            💡 <b>网页视频下载提示</b>：该链接是视频网页地址。请在浏览器中播放该视频，FastStream 嗅探服务 (端口 37651) 会自动捕获真实流媒体并弹出高速下载；若直接下载文件，请填写真实文件直链。
+          </div>
+          <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center; font-size: 11px;">
+            <span style="color: var(--text-muted);">Quick Test Samples:</span>
+            <button type="button" class="btn btn-secondary" id="btnSampleVideo" style="padding: 2px 8px; font-size: 11px;">🎬 5MB Video (MP4)</button>
+            <button type="button" class="btn btn-secondary" id="btnSampleSpeed" style="padding: 2px 8px; font-size: 11px;">🚀 10MB Cloudflare</button>
+          </div>
         </div>
 
         <div class="form-row">

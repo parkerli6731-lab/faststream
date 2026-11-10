@@ -44,6 +44,7 @@ export type FSMAction =
   | { type: 'PROBE_SUCCESS'; totalSize: number | null; resumable: boolean; connections: number }
   | { type: 'SEGMENT_CHUNK'; segmentIndex: number; bytes: number }
   | { type: 'SEGMENT_COMPLETE'; segmentIndex: number }
+  | { type: 'SPEED_TICK'; speed: number; eta: number | null }
   | { type: 'PAUSE' }
   | { type: 'RESUME' }
   | { type: 'MERGE_PROGRESS'; mergedBytes: number }

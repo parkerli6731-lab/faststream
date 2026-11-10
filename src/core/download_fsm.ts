@@ -121,6 +121,14 @@ export class DownloadFSM {
         });
       }
 
+      case 'SPEED_TICK': {
+        return new DownloadFSM(p, {
+          ...this.getSnapshot(),
+          speed: action.speed,
+          eta: action.eta,
+        });
+      }
+
       case 'PAUSE': {
         if (['downloading', 'connecting', 'queued'].includes(this.status)) {
           return new DownloadFSM(p, {

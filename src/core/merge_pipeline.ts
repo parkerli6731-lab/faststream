@@ -18,7 +18,7 @@ export function validateMergeIntegrity(
   actualSize: number,
   expectedSize: number | null
 ): MergeValidationResult {
-  if (expectedSize == null) {
+  if (expectedSize == null || expectedSize <= 0) {
     // 流式未知大小，只要实际大小大于 0 即可认为有效
     return {
       valid: actualSize > 0,
